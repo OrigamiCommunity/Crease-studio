@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#10141d">
+<title>Crease Studio — Computational Origami Workspace</title>
+<style>
+:root{
+ --bg:#0b0e14;--panel:#121722;--panel2:#171e2b;--panel3:#202a39;--line:#2a3445;
+ --text:#eef3fb;--muted:#93a1b6;--gold:#e9bd70;--gold2:#c99143;--red:#ff667d;--blue:#63b7ff;
+ --green:#7ce0b0;--shadow:0 18px 50px #0005;--radius:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -20%,#253047 0,transparent 48%),var(--bg);color:var(--text);font:14px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+button{color:inherit;cursor:pointer}
+.app{max-width:1600px;margin:auto;padding:18px}
+.topbar{display:flex;align-items:center;gap:16px;justify-content:space-between;padding:13px 17px;border:1px solid #ffffff12;background:#111722dd;backdrop-filter:blur(18px);border-radius:20px;box-shadow:var(--shadow);position:sticky;top:10px;z-index:20}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#f3d79d,#bd853a);display:grid;place-items:center;color:#161923;box-shadow:0 5px 20px #dba95835;flex-shrink:0}
+.brand h1{font-size:17px;letter-spacing:.13em;margin:0;font-weight:800}.brand p{margin:2px 0 0;color:var(--muted);font-size:11px;letter-spacing:.07em;text-transform:uppercase}
+.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:linear-gradient(180deg,#202938,#171e2a);border-radius:10px;padding:9px 12px;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.18s ease;font-weight:650;font-size:12px;white-space:nowrap}
+.btn:hover{border-color:#71819b;transform:translateY(-1px)}.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(135deg,#f0d39a,#d6a55b);border-color:#e5bf7b;color:#171923;box-shadow:0 5px 20px #d5a05220}
+.btn.ghost{background:transparent}.btn.danger{color:#ff9ca9}.btn.active{border-color:var(--gold);background:#3b3020;color:#ffe2a8}
+.status{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px #7ce0b080}
+.layout{display:grid;grid-template-columns:220px minmax(300px,1fr) 255px;gap:14px;margin-top:15px;align-items:start}
+.panel{background:linear-gradient(180deg,#151b27f2,#111722f2);border:1px solid #ffffff12;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{padding:15px 16px 12px;border-bottom:1px solid #ffffff0c;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.panel-head h2{margin:0;font-size:11px;text-transform:uppercase;letter-spacing:.15em;color:#c5d0e0}
+.panel-body{padding:13px}
+.section-label{color:#718198;font-size:10px;text-transform:uppercase;letter-spacing:.14em;font-weight:800;margin:5px 0 9px}
+.tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.tool{min-height:68px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-align:left;padding:10px;border:1px solid #ffffff10;border-radius:11px;background:#171e2a;color:#c7d1e0;font-size:11px;font-weight:650;gap:9px}
+.tool svg{color:#aab9cd}.tool.active{border-color:#d7ad69;background:linear-gradient(135deg,#393022,#202631);color:#ffe4ae;box-shadow:inset 0 0 0 1px #e9bd7020}.tool.active svg{color:var(--gold)}
+.icon{width:18px;height:18px;display:block;flex-shrink:0}
+.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}.field label{font-size:11px;color:var(--muted)}
+input[type=number],input[type=text],select{width:100%;background:#0d121b;border:1px solid var(--line);color:var(--text);border-radius:8px;padding:9px 10px;outline:none}
+input:focus,select:focus{border-color:var(--gold)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:11px 0;color:#c1ccda;font-size:12px}
+input[type=checkbox]{accent-color:var(--gold);width:15px;height:15px}
+.main{min-width:0}
+.workspace-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:2px 2px 12px}
+.workspace-title h2{margin:0;font-size:19px;letter-spacing:-.03em}.workspace-title p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.workspace-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.canvas-shell{border:1px solid #ffffff17;border-radius:18px;background:#111722;overflow:hidden;box-shadow:var(--shadow)}
+.canvas-toolbar{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 12px;background:#151c28;border-bottom:1px solid #ffffff0d}
+.toolbar-group{display:flex;align-items:center;gap:6px;flex-wrap:wrap}.mini{font-size:11px;padding:7px 9px;border-radius:8px}
+.zoom-readout{font-size:11px;color:var(--gold);font-variant-numeric:tabular-nums;min-width:42px;text-align:center}
+.canvas-viewport{position:relative;overflow:hidden;min-height:350px;height:min(68vh,740px);background-color:#e8e7e2;background-image:radial-gradient(#c8c6c0 0.8px,transparent .8px);background-size:18px 18px;touch-action:none}
+#paper{display:block;width:100%;height:100%;cursor:crosshair;outline:none}
+#paper.zoom-target{cursor:zoom-in}#paper.pan-mode{cursor:grab}
+.canvas-hint{position:absolute;left:13px;bottom:12px;padding:7px 10px;border-radius:9px;background:#111722df;border:1px solid #ffffff18;color:#c4cfdf;font-size:10px;pointer-events:none;backdrop-filter:blur(8px)}
+.canvas-hint b{color:#f0d39a}
+.canvas-coords{position:absolute;right:13px;bottom:12px;color:#6e7886;font:10px ui-monospace,monospace;pointer-events:none}
+.zoom-banner{display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);padding:8px 13px;border-radius:10px;background:#e8bd72;color:#171923;font-size:11px;font-weight:800;box-shadow:0 8px 25px #0003;white-space:nowrap;pointer-events:none}
+.zoom-banner.show{display:block}
+.bottom-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 13px;border-top:1px solid #ffffff0d;color:var(--muted);font-size:11px}
+.legend{display:flex;gap:12px;flex-wrap:wrap}.legend span{display:flex;gap:6px;align-items:center}.swatch{width:17px;height:3px;border-radius:3px}
+.right-panel .panel-body{padding:14px}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:#0d121b;border:1px solid #ffffff0c;border-radius:11px;padding:11px}
+.stat strong{font-size:22px;display:block;letter-spacing:-.04em}.stat span{color:var(--muted);font-size:10px}
+.check-item{padding:10px 0;border-bottom:1px solid #ffffff0b;display:flex;gap:9px;align-items:flex-start;font-size:11px;color:#c6d0df}
+.check-icon{width:21px;height:21px;display:grid;place-items:center;border-radius:7px;background:#25362f;color:var(--green);flex-shrink:0}
+.check-icon.warn{background:#3b3020;color:#efc47c}.check-icon.error{background:#40242d;color:var(--red)}
+.check-item b{display:block;font-size:11px;margin-bottom:2px}.check-item small{color:var(--muted);font-size:10px;line-height:1.4;display:block}
+.layer{display:flex;align-items:center;gap:8px;padding:9px;border:1px solid #ffffff0d;border-radius:9px;margin:6px 0;background:#0f141e;font-size:11px}
+.layer input{margin-left:auto}
+.layer-color{width:8px;height:8px;border-radius:3px}
+.note{color:var(--muted);font-size:10px;line-height:1.5}
+.toast{position:fixed;bottom:22px;left:50%;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#f0d39a;color:#161923;border-radius:11px;padding:11px 16px;font-weight:750;font-size:12px;box-shadow:var(--shadow);transition:.25s;z-index:100}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.modal-backdrop{display:none;position:fixed;inset:0;background:#05070bcc;backdrop-filter:blur(8px);z-index:50;align-items:center;justify-content:center;padding:18px}
+.modal-backdrop.show{display:flex}.modal{width:min(560px,100%);background:#151b27;border:1px solid #ffffff18;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.modal-content{padding:18px}.modal h3{margin:0;font-size:17px}.modal p{color:var(--muted);font-size:12px;line-height:1.6}
+.file-label{display:inline-flex}
+@media(max-width:1100px){.layout{grid-template-columns:190px minmax(0,1fr)}.right-panel{grid-column:1/-1}.right-panel .panel-body{display:grid;grid-template-columns:1fr 1fr;gap:18px}.right-panel .panel-head{grid-column:1/-1}}
+@media(max-width:720px){.app{padding:9px}.topbar{position:relative;top:0;padding:10px;border-radius:15px;align-items:flex-start}.brand h1{font-size:14px}.brand p{font-size:9px}.logo{width:36px;height:36px}.top-actions .status{display:none}.top-actions .btn{padding:8px;font-size:11px}.layout{grid-template-columns:1fr;gap:11px}.left-panel{order:2}.main{order:1}.right-panel{order:3;grid-column:auto}.left-panel .panel-body{display:grid;grid-template-columns:1fr 1fr;gap:10px}.left-panel .tool-grid{grid-column:1/-1}.left-panel .section-label{grid-column:1/-1}.left-panel .field{margin:3px 0}.workspace-head{align-items:flex-start}.workspace-title h2{font-size:17px}.workspace-title p{font-size:11px}.workspace-actions .btn{font-size:10px;padding:7px}.canvas-viewport{height:58vh;min-height:320px}.right-panel .panel-body{display:block}.canvas-hint{max-width:75%;font-size:9px}.bottom-bar{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand">
+    <div class="logo" aria-hidden="true">
+      <svg width="25" height="25" viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 2l9 5.5-9 5.3L3 7.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M3 7.5v9L12 22v-9.7M21 7.5v9L12 22M7.5 4.8l9 5.4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </div>
+    <div><h1>CREASE STUDIO</h1><p>Computational origami workspace</p></div>
+  </div>
+  <div class="top-actions">
+    <div class="status"><span class="dot"></span> Offline-ready · Local project</div>
+    <button class="btn ghost" id="newProjectBtn">＋ New</button>
+    <button class="btn" id="saveBtn">Save project</button>
+    <button class="btn primary" id="exportBtn">Export</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="panel left-panel">
+    <div class="panel-head"><h2>Design tools</h2><span style="color:var(--gold);font-size:10px">01 / EDIT</span></div>
+    <div class="panel-body">
+      <div class="section-label">Crease types</div>
+      <div class="tool-grid">
+        <button class="tool active" data-tool="mountain"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="m3 17 9-10 9 10H3Z" stroke="#ff667d" stroke-width="2" stroke-linejoin="round"/><path d="M6 20h12" stroke="#ff667d" stroke-width="1.5"/></svg>Mountain crease</button>
+        <button class="tool" data-tool="valley"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="m3 7 9 10 9-10H3Z" stroke="#63b7ff" stroke-width="2" stroke-linejoin="round"/></svg>Valley crease</button>
+        <button class="tool" data-tool="construction"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M3 12h18" stroke="#9daec5" stroke-width="2" stroke-dasharray="3 3"/></svg>Construction</button>
+        <button class="tool" data-tool="annotation"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M5 4h14v13H9l-4 3V4Z" stroke="#e9bd70" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 8h8M8 12h5" stroke="#e9bd70" stroke-width="1.5"/></svg>Annotation</button>
+        <button class="tool" data-tool="erase"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="m4 15 9-10 7 6-9 10H7l-3-3v-3Z" stroke="#c7d1e0" stroke-width="1.7" stroke-linejoin="round"/><path d="m9 20 7-8" stroke="#c7d1e0" stroke-width="1.7"/></svg>Erase segment</button>
+        <button class="tool" data-tool="invert"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 8a8 8 0 0 1 14-3l2 2M20 4v3h-3M20 16a8 8 0 0 1-14 3l-2-2M4 20v-3h3" stroke="#c7d1e0" stroke-width="1.7" stroke-linecap="round"/></svg>Invert crease</button>
+      </div>
+      <div class="section-label" style="margin-top:17px">Canvas setup</div>
+      <div class="two">
+        <div class="field"><label for="gridSize">Grid divisions</label><input id="gridSize" type="number" min="2" max="200" value="32"></div>
+        <div class="field"><label for="paperSize">Paper size (cm)</label><input id="paperSize" type="number" min="1" max="1000" value="50" step=".1"></div>
+      </div>
+      <div class="field"><label for="lineWidth">Crease thickness</label><input id="lineWidth" type="range" min="1" max="4" value="2" style="width:100%;accent-color:var(--gold)"></div>
+      <div class="toggle-row"><label for="showGrid">Show grid</label><input id="showGrid" type="checkbox" checked></div>
+      <div class="toggle-row"><label for="snapGrid">Snap to grid</label><input id="snapGrid" type="checkbox" checked></div>
+      <div class="toggle-row"><label for="showPoints">Show vertices</label><input id="showPoints" type="checkbox" checked></div>
+      <button class="btn" style="width:100%;margin-top:7px" id="fitBtn">Fit full sheet</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="workspace-head">
+      <div class="workspace-title"><h2>Untitled crease pattern</h2><p>Precise geometry. Clear thinking. Better folds.</p></div>
+      <div class="workspace-actions">
+        <button class="btn mini" id="undoBtn">↶ Undo</button>
+        <button class="btn mini" id="redoBtn">↷ Redo</button>
+      </div>
+    </div>
+    <section class="canvas-shell">
+      <div class="canvas-toolbar">
+        <div class="toolbar-group">
+          <button class="btn mini" id="zoomSelectBtn">⌖ Select zoom area</button>
+          <button class="btn mini" id="zoomInBtn">＋ Zoom in</button>
+          <button class="btn mini" id="zoomOutBtn">− Zoom out</button>
+          <button class="btn mini" id="zoomResetBtn">Reset zoom</button>
+          <span class="zoom-readout" id="zoomReadout">100%</span>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn mini" id="divideBtn">Divide line</button>
+          <button class="btn mini" id="symmetryBtn">Symmetry</button>
+        </div>
+      </div>
+      <div class="canvas-viewport" id="viewport">
+        <canvas id="paper" tabindex="0" aria-label="Crease pattern editor"></canvas>
+        <div class="zoom-banner" id="zoomBanner">SELECT AN AREA TO ZOOM</div>
+        <div class="canvas-hint" id="hint"><b>DRAW</b> · Click a start point, then an end point</div>
+        <div class="canvas-coords" id="coords">x: — · y: —</div>
+      </div>
+      <div class="bottom-bar">
+        <div class="legend">
+          <span><i class="swatch" style="background:var(--red)"></i>Mountain</span>
+          <span><i class="swatch" style="background:var(--blue)"></i>Valley</span>
+          <span><i class="swatch" style="background:#8e9bb0"></i>Construction</span>
+        </div>
+        <span id="statusText">Ready · 0 segments · 32 × 32 grid</span>
+      </div>
+    </section>
+  </main>
+
+  <aside class="panel right-panel">
+    <div class="panel-head"><h2>Analysis & layers</h2><span style="color:var(--gold);font-size:10px">02 / CHECK</span></div>
+    <div class="panel-body">
+      <div>
+        <div class="section-label">Pattern overview</div>
+        <div class="stat-grid">
+          <div class="stat"><strong id="segmentCount">0</strong><span>Segments</span></div>
+          <div class="stat"><strong id="vertexCount">0</strong><span>Vertices</span></div>
+          <div class="stat"><strong id="mountainCount">0</strong><span>Mountain</span></div>
+          <div class="stat"><strong id="valleyCount">0</strong><span>Valley</span></div>
+        </div>
+        <div class="section-label" style="margin-top:19px">Geometry checks</div>
+        <div id="checks">
+          <div class="check-item"><div class="check-icon">✓</div><div><b>Workspace ready</b><small>Draw creases to run basic checks.</small></div></div>
+        </div>
+        <button class="btn" id="analyzeBtn" style="width:100%;margin-top:10px">Run geometry checks</button>
+      </div>
+      <div>
+        <div class="section-label">Layers</div>
+        <div class="layer"><span class="layer-color" style="background:#ff667d"></span>Creases <input type="checkbox" checked data-layer="crease" aria-label="Show creases"></div>
+        <div class="layer"><span class="layer-color" style="background:#8e9bb0"></span>Construction <input type="checkbox" checked data-layer="construction" aria-label="Show construction"></div>
+        <div class="layer"><span class="layer-color" style="background:#e9bd70"></span>Annotations <input type="checkbox" checked data-layer="annotation" aria-label="Show annotations"></div>
+        <div class="section-label" style="margin-top:19px">Reference image</div>
+        <label class="btn file-label" style="width:100%;justify-content:center"><input type="file" id="referenceInput" accept="image/*" hidden>Import CP image</label>
+        <button class="btn" id="removeReferenceBtn" style="width:100%;margin-top:7px">Remove reference</button>
+        <div class="field"><label for="referenceOpacity">Reference opacity</label><input type="range" id="referenceOpacity" min="5" max="80" value="30" style="width:100%;accent-color:var(--gold)"></div>
+        <p class="note">The reference image is a tracing guide. It is kept in this session; export a project file to preserve your work.</p>
+      </div>
+    </div>
+  </aside>
+</div>
+<footer style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 4px 8px;color:#68768b;font-size:10px;letter-spacing:.04em"><span>CREASE STUDIO · OFFLINE WORKSPACE</span><span>Local-first · No account · No external services</span></footer>
+</div>
+
+<div class="modal-backdrop" id="exportModal">
+  <div class="modal">
+    <div class="panel-head"><h3>Export your crease pattern</h3><button class="btn mini" id="closeExport">Close</button></div>
+    <div class="modal-content">
+      <p>Choose a format. SVG keeps the lines crisp at any scale; PNG is convenient for sharing; the project file preserves editable geometry.</p>
+      <div class="tool-grid">
+        <button class="tool" id="svgExport"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M5 3h10l4 4v14H5V3Z" stroke="#e9bd70" stroke-width="1.7"/><path d="M14 3v5h5M8 13h8M8 17h6" stroke="#e9bd70" stroke-width="1.5"/></svg>Export SVG</button>
+        <button class="tool" id="pngExport"><svg class="icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="#63b7ff" stroke-width="1.7"/><circle cx="8" cy="8" r="1.5" stroke="#63b7ff"/><path d="m4 18 6-6 3 3 3-5 4 8" stroke="#63b7ff" stroke-width="1.7"/></svg>Export PNG</button>
+        <button class="tool" id="projectExport"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M4 4h11l5 5v11H4V4Z" stroke="#7ce0b0" stroke-width="1.7"/><path d="M14 4v6h6" stroke="#7ce0b0" stroke-width="1.7"/></svg>Save project JSON</button>
+        <button class="tool" id="pdfExport"><svg class="icon" viewBox="0 0 24 24" fill="none"><path d="M5 3h10l4 4v14H5V3Z" stroke="#ff667d" stroke-width="1.7"/><path d="M8 13h8M8 17h8" stroke="#ff667d" stroke-width="1.5"/></svg>Print / Save PDF</button>
+      </div>
+      <p class="note">PDF export opens your browser’s print dialog. Choose “Save as PDF”.</p>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" id="divideModal">
+  <div class="modal">
+    <div class="panel-head"><h3>Divide a segment</h3><button class="btn mini" id="closeDivide">Close</button></div>
+    <div class="modal-content">
+      <p>Choose how many equal intervals to create. Then click the segment you want to divide. Division points are added as real vertices.</p>
+      <div class="field"><label for="divisionCount">Number of equal parts</label><select id="divisionCount"><option value="2">2 parts</option><option value="3">3 parts</option><option value="4">4 parts</option><option value="5">5 parts</option><option value="6">6 parts</option><option value="8">8 parts</option><option value="10">10 parts</option></select></div>
+      <button class="btn primary" id="startDivide" style="width:100%">Select segment</button>
+    </div>
+  </div>
+</div>
+<div class="modal-backdrop" id="symmetryModal">
+  <div class="modal">
+    <div class="panel-head"><h3>Symmetry tools</h3><button class="btn mini" id="closeSymmetry">Close</button></div>
+    <div class="modal-content">
+      <p>Apply symmetry to newly drawn segments. Existing segments are not duplicated automatically.</p>
+      <div class="toggle-row"><label for="symH">Horizontal symmetry</label><input type="checkbox" id="symH"></div>
+      <div class="toggle-row"><label for="symV">Vertical symmetry</label><input type="checkbox" id="symV"></div>
+      <div class="toggle-row"><label for="symD">Diagonal symmetry (square sheet)</label><input type="checkbox" id="symD"></div>
+      <button class="btn primary" id="applySymmetry" style="width:100%">Apply to new lines</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const canvas = $('paper'), ctx = canvas.getContext('2d'), viewport = $('viewport');
+const NS = 'http://www.w3.org/2000/svg';
+let N=32, paperSize=50, activeTool='mountain', startPoint=null, segments=[], annotations=[], undoStack=[], redoStack=[];
+let layers={crease:true,construction:true,annotation:true}, zoom=1, panX=0, panY=0, zoomTargetMode=false, zoomAnchor=null, divideMode=false, divideParts=2;
+let referenceImage=null, referenceData=null, projectName='Untitled crease pattern', pointerDown=null, dragPan=false, symmetry={h:false,v:false,d:false};
+const colors={mountain:'#ef5b73',valley:'#4aaeff',construction:'#8797ad',annotation:'#d7a85c'};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),2200)}
+function pointKey(p){return `${Math.round(p.x*1e6)/1e6},${Math.round(p.y*1e6)/1e6}`}
+function cloneState(){return JSON.stringify({segments,annotations,projectName})}
+function saveHistory(){undoStack.push(cloneState());if(undoStack.length>150)undoStack.shift();redoStack=[];updateUndoButtons()}
+function restoreState(s){const d=JSON.parse(s);segments=d.segments||[];annotations=d.annotations||[];projectName=d.projectName||'Untitled crease pattern';startPoint=null;render();updateStats();updateUndoButtons()}
+function undo(){if(!undoStack.length)return;redoStack.push(cloneState());restoreState(undoStack.pop())}
+function redo(){if(!redoStack.length)return;undoStack.push(cloneState());restoreState(redoStack.pop())}
+function updateUndoButtons(){$('undoBtn').disabled=!undoStack.length;$('redoBtn').disabled=!redoStack.length;$('undoBtn').style.opacity=undoStack.length?1:.45;$('redoBtn').style.opacity=redoStack.length?1:.45}
+function resize(){const r=viewport.getBoundingClientRect(),dpr=Math.min(window.devicePixelRatio||1,2);canvas.width=Math.max(1,Math.round(r.width*dpr));canvas.height=Math.max(1,Math.round(r.height*dpr));canvas.style.width=r.width+'px';canvas.style.height=r.height+'px';ctx.setTransform(dpr,0,0,dpr,0,0);render()}
+function viewGeometry(){const w=viewport.clientWidth,h=viewport.clientHeight,base=Math.min(w,h)*.82;return {w,h,base,cx:w/2,cy:h/2}}
+function worldToScreen(p){const g=viewGeometry(),s=g.base*zoom/N;return {x:g.cx+panX+(p.x-N/2)*s,y:g.cy+panY+(p.y-N/2)*s}}
+function screenToWorld(x,y){const g=viewGeometry(),s=g.base*zoom/N;return {x:clamp((x-g.cx-panX)/s+N/2,0,N),y:clamp((y-g.cy-panY)/s+N/2,0,N)}}
+function getScreenPos(e){const r=canvas.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top}}
+function snap(p){if($('snapGrid').checked)return {x:clamp(Math.round(p.x),0,N),y:clamp(Math.round(p.y),0,N)};return {x:clamp(p.x,0,N),y:clamp(p.y,0,N)}}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function segmentScreenDist(p,a,b){const dx=b.x-a.x,dy=b.y-a.y,l=dx*dx+dy*dy;if(!l)return dist(p,a);const t=clamp(((p.x-a.x)*dx+(p.y-a.y)*dy)/l,0,1);return dist(p,{x:a.x+t*dx,y:a.y+t*dy})}
+function lineIntersection(a,b,c,d){
+ const den=(b.x-a.x)*(d.y-c.y)-(b.y-a.y)*(d.x-c.x);
+ if(Math.abs(den)<1e-9)return null;
+ const t=((c.x-a.x)*(d.y-c.y)-(c.y-a.y)*(d.x-c.x))/den;
+ const u=((c.x-a.x)*(b.y-a.y)-(c.y-a.y)*(b.x-a.x))/den;
+ if(t>1e-8&&t<1-1e-8&&u>1e-8&&u<1-1e-8)return {x:a.x+t*(b.x-a.x),y:a.y+t*(b.y-a.y)};
+ return null;
+}
+function normalizeSegments(){
+ // Split every segment at all crossings, preserving crease type and layer.
+ const out=[];
+ for(let i=0;i<segments.length;i++){
+  const s=segments[i],cuts=[{t:0,p:s.a},{t:1,p:s.b}];
+  for(let j=0;j<segments.length;j++){if(i===j)continue;const t=segments[j],p=lineIntersection(s.a,s.b,t.a,t.b);if(p){const dx=s.b.x-s.a.x,dy=s.b.y-s.a.y;cuts.push({t:((p.x-s.a.x)*dx+(p.y-s.a.y)*dy)/(dx*dx+dy*dy),p});}}
+  cuts.sort((a,b)=>a.t-b.t);
+  const uniq=[];for(const c of cuts)if(!uniq.length||Math.abs(c.t-uniq[uniq.length-1].t)>1e-7)uniq.push(c);
+  for(let k=0;k<uniq.length-1;k++){const a=uniq[k].p,b=uniq[k+1].p;if(dist(a,b)>1e-7)out.push({...s,a:{...a},b:{...b},id:cryptoRandom()});}
+ }
+ // remove exact duplicate pieces, keeping the most recently encountered segment
+ const map=new Map();for(const s of out){const ka=pointKey(s.a),kb=pointKey(s.b),key=ka<kb?ka+'|'+kb:kb+'|'+ka;map.set(key,s)}
+ segments=[...map.values()];
+}
+function cryptoRandom(){return Math.random().toString(36).slice(2,10)}
+function allVertices(){const m=new Map();for(const s of segments){m.set(pointKey(s.a),s.a);m.set(pointKey(s.b),s.b)}return [...m.values()]}
+function render(){
+ const w=viewport.clientWidth,h=viewport.clientHeight;if(!w||!h)return;
+ ctx.clearRect(0,0,w,h);
+ ctx.fillStyle='#e9e7e1';ctx.fillRect(0,0,w,h);
+ const a=worldToScreen({x:0,y:0}),b=worldToScreen({x:N,y:N}),side=b.x-a.x;
+ ctx.save();ctx.beginPath();ctx.rect(a.x,a.y,side,side);ctx.clip();
+ ctx.fillStyle='#f5f3ee';ctx.fillRect(a.x,a.y,side,side);
+ if(referenceImage){ctx.globalAlpha=Number($('referenceOpacity').value)/100;ctx.drawImage(referenceImage,a.x,a.y,side,side);ctx.globalAlpha=1}
+ if($('showGrid').checked){
+  const step=side/N;ctx.strokeStyle='#d7d5cf';ctx.lineWidth=.65;
+  for(let i=0;i<=N;i++){const x=a.x+i*step,y=a.y+i*step;ctx.beginPath();ctx.moveTo(x,a.y);ctx.lineTo(x,b.y);ctx.stroke();ctx.beginPath();ctx.moveTo(a.x,y);ctx.lineTo(b.x,y);ctx.stroke()}
+ }
+ // border
+ ctx.strokeStyle='#b9b8b1';ctx.lineWidth=1;ctx.strokeRect(a.x,a.y,side,side);
+ for(const s of segments){
+  const isConstruction=s.type==='construction',isAnnotation=s.type==='annotation';
+  if((isConstruction&&!layers.construction)||(!isConstruction&&!isAnnotation&&!layers.crease)||(isAnnotation&&!layers.annotation))continue;
+  const p=worldToScreen(s.a),q=worldToScreen(s.b);ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);
+  ctx.strokeStyle=colors[s.type]||'#333';ctx.lineWidth=Number($('lineWidth').value)+(s.type==='construction'?-0.5:0);ctx.lineCap='round';
+  if(isConstruction)ctx.setLineDash([5,4]);else ctx.setLineDash([]);
+  ctx.stroke();ctx.setLineDash([]);
+ }
+ if(annotations.length&&layers.annotation){ctx.fillStyle=colors.annotation;ctx.font='12px system-ui';for(const an of annotations){const p=worldToScreen(an.p);ctx.fillText(an.text,p.x+5,p.y-5)}}
+ if($('showPoints').checked){
+  const vertices=allVertices();ctx.fillStyle='#253348';
+  for(const p of vertices){const q=worldToScreen(p);ctx.beginPath();ctx.arc(q.x,q.y,Math.max(1.7,2.2*zoom**.25),0,Math.PI*2);ctx.fill()}
+ }
+ if(startPoint){const p=worldToScreen(startPoint);ctx.beginPath();ctx.arc(p.x,p.y,5,0,Math.PI*2);ctx.fillStyle='#d6a453';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke()}
+ ctx.restore();
+ $('zoomReadout').textContent=Math.round(zoom*100)+'%';
+ $('statusText').textContent=`Ready · ${segments.length} segments · ${N} × ${N} grid`;
+}
+function updateStats(){
+ $('segmentCount').textContent=segments.length;
+ $('vertexCount').textContent=allVertices().length;
+ $('mountainCount').textContent=segments.filter(s=>s.type==='mountain').length;
+ $('valleyCount').textContent=segments.filter(s=>s.type==='valley').length;
+ render();
+}
+function updateToolUI(){document.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===activeTool));
+ const labels={mountain:'DRAW',valley:'DRAW',construction:'CONSTRUCTION',annotation:'ANNOTATION',erase:'ERASE',invert:'INVERT'};
+ $('hint').innerHTML=`<b>${labels[activeTool]||'DRAW'}</b> · ${activeTool==='erase'?'Click a segment to remove it':activeTool==='invert'?'Click a crease to switch its type':activeTool==='annotation'?'Click a point to add a note':'Click a start point, then an end point'}`;
+ canvas.classList.toggle('zoom-target',zoomTargetMode);canvas.classList.toggle('pan-mode',dragPan);
+}
+function closestSegment(p,maxScreen=14){let best=null,bestD=maxScreen;for(const s of segments){const a=worldToScreen(s.a),b=worldToScreen(s.b),d=segmentScreenDist(p,a,b);if(d<bestD){best=s;bestD=d}}return best}
+function addSegment(a,b,type,skipSym=false){
+ if(dist(a,b)<1e-7){toast('Choose two different points.');return}
+ segments.push({id:cryptoRandom(),a:{...a},b:{...b},type,layer:type==='construction'?'construction':'crease'});
+ if(!skipSym){
+  const add=(p,q)=>segments.push({id:cryptoRandom(),a:p,b:q,type,layer:type==='construction'?'construction':'crease'});
+  if(symmetry.h)add({x:a.x,y:N-a.y},{x:b.x,y:N-b.y});
+  if(symmetry.v)add({x:N-a.x,y:a.y},{x:N-b.x,y:b.y});
+  if(symmetry.d){add({x:a.y,y:a.x},{x:b.y,y:b.x});}
+ }
+ normalizeSegments();updateStats();
+}
+function zoomAt(screenX,screenY,factor){
+ const before=screenToWorld(screenX,screenY);zoom=clamp(zoom*factor,0.25,24);
+ const g=viewGeometry(),s=g.base*zoom/N;
+ panX=screenX-g.cx-(before.x-N/2)*s;panY=screenY-g.cy-(before.y-N/2)*s;
+ render();
+}
+function fitSheet(){zoom=1;panX=0;panY=0;render()}
+function pointInCanvas(e){const pos=getScreenPos(e);return {screen:pos,world:snap(screenToWorld(pos.x,pos.y))}}
+function onPointerDown(e){
+ if(e.button!==undefined&&e.button!==0)return;
+ const pos=getScreenPos(e);canvas.setPointerCapture?.(e.pointerId);
+ if(zoomTargetMode){pointerDown={x:pos.x,y:pos.y,mode:'zoom'};zoomAnchor=pos;renderZoomRect(pos,pos);return}
+ if(e.shiftKey||e.button===1){pointerDown={x:pos.x,y:pos.y,mode:'pan',px:panX,py:panY};dragPan=true;updateToolUI();return}
+ if(divideMode){const s=closestSegment(pos,18);if(s){saveHistory();const count=divideParts;const pts=[];for(let i=0;i<=count;i++)pts.push({x:s.a.x+(s.b.x-s.a.x)*i/count,y:s.a.y+(s.b.y-s.a.y)*i/count});segments=segments.filter(x=>x.id!==s.id);for(let i=0;i<count;i++)segments.push({id:cryptoRandom(),a:pts[i],b:pts[i+1],type:s.type,layer:s.layer});normalizeSegments();divideMode=false;$('divideModal').classList.remove('show');toast(`Segment divided into ${count} equal parts.`);updateStats()}else toast('Click closer to a segment.');return}
+ const p=snap(screenToWorld(pos.x,pos.y));
+ if(activeTool==='erase'||activeTool==='invert'){
+  const s=closestSegment(pos);if(!s){toast('No segment close enough.');return}saveHistory();
+  if(activeTool==='erase')segments=segments.filter(x=>x.id!==s.id);
+  else if(s.type==='mountain')s.type='valley';else if(s.type==='valley')s.type='mountain';else toast('Only mountain and valley creases can be inverted.');
+  updateStats();return;
+ }
+ if(activeTool==='annotation'){
+  const text=prompt('Annotation text:');if(text&&text.trim()){saveHistory();annotations.push({p,text:text.trim().slice(0,100)});render()}return;
+ }
+ if(!startPoint){startPoint=p;render();return}
+ saveHistory();addSegment(startPoint,p,activeTool);startPoint=null;updateStats();
+}
+let zoomRect=null;
+function renderZoomRect(a,b){zoomRect={a,b};render();if(!a||!b)return;const r=viewport.getBoundingClientRect();ctx.save();ctx.strokeStyle='#b98539';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.strokeRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.fillStyle='#e9bd7020';ctx.fillRect(a.x,a.y,b.x-a.x,b.y-a.y);ctx.restore()}
+function onPointerMove(e){
+ const pos=getScreenPos(e),p=screenToWorld(pos.x,pos.y);$('coords').textContent=`x: ${p.x.toFixed(2)} · y: ${p.y.toFixed(2)}`;
+ if(pointerDown?.mode==='zoom'){render();const r=pointerDown;ctx.save();ctx.strokeStyle='#b98539';ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.strokeRect(r.x,r.y,pos.x-r.x,pos.y-r.y);ctx.fillStyle='#e9bd7020';ctx.fillRect(r.x,r.y,pos.x-r.x,pos.y-r.y);ctx.restore();return}
+ if(pointerDown?.mode==='pan'){panX=pointerDown.px+(pos.x-pointerDown.x);panY=pointerDown.py+(pos.y-pointerDown.y);render();return}
+}
+function onPointerUp(e){
+ if(!pointerDown)return;const pos=getScreenPos(e);
+ if(pointerDown.mode==='zoom'){
+  const x1=Math.min(pointerDown.x,pos.x),x2=Math.max(pointerDown.x,pos.x),y1=Math.min(pointerDown.y,pos.y),y2=Math.max(pointerDown.y,pos.y),w=x2-x1,h=y2-y1;
+  if(w>12&&h>12){const center={x:(x1+x2)/2,y:(y1+y2)/2};const world=screenToWorld(center.x,center.y);const factor=Math.min(viewport.clientWidth/w,viewport.clientHeight/h);zoom=clamp(zoom*factor,.25,24);const g=viewGeometry(),s=g.base*zoom/N;panX=-(world.x-N/2)*s;panY=-(world.y-N/2)*s;
+  }else{zoomAt(pos.x,pos.y,2)}
+  zoomTargetMode=false;$('zoomSelectBtn').classList.remove('active');$('zoomBanner').classList.remove('show');toast('Zoom focused on selected area.');render();
+ }
+ pointerDown=null;dragPan=false;updateToolUI();
+}
+canvas.addEventListener('pointerdown',onPointerDown);
+canvas.addEventListener('pointermove',onPointerMove);
+canvas.addEventListener('pointerup',onPointerUp);
+canvas.addEventListener('pointercancel',()=>{pointerDown=null;dragPan=false;updateToolUI();render()});
+canvas.addEventListener('click',e=>{if(zoomTargetMode||pointerDown)return;});
+canvas.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();const p=getScreenPos(e);zoomAt(p.x,p.y,e.deltaY<0?1.15:1/1.15)},{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
+document.querySelectorAll('[data-tool]').forEach(b=>b.addEventListener('click',()=>{activeTool=b.dataset.tool;startPoint=null;updateToolUI();render()}));
+$('gridSize').addEventListener('change',()=>{const oldN=N;const n=clamp(parseInt($('gridSize').value)||32,2,200);$('gridSize').value=n;segments=segments.map(s=>({...s,a:{x:s.a.x/oldN*n,y:s.a.y/oldN*n},b:{x:s.b.x/oldN*n,y:s.b.y/oldN*n}}));N=n;fitSheet();updateStats()});
+$('paperSize').addEventListener('change',()=>{paperSize=clamp(Number($('paperSize').value)||50,1,1000);$('paperSize').value=paperSize});
+['showGrid','snapGrid','showPoints','lineWidth','referenceOpacity'].forEach(id=>$(id).addEventListener('input',render));
+document.querySelectorAll('[data-layer]').forEach(el=>el.addEventListener('change',()=>{layers[el.dataset.layer]=el.checked;render()}));
+$('zoomSelectBtn').addEventListener('click',()=>{zoomTargetMode=!zoomTargetMode;zoomRect=null;$('zoomSelectBtn').classList.toggle('active',zoomTargetMode);$('zoomBanner').classList.toggle('show',zoomTargetMode);updateToolUI();toast(zoomTargetMode?'Drag a rectangle around the area to zoom into.':'Zoom selection cancelled.')});
+$('zoomInBtn').addEventListener('click',()=>zoomAt(viewport.clientWidth/2,viewport.clientHeight/2,1.5));
+$('zoomOutBtn').addEventListener('click',()=>zoomAt(viewport.clientWidth/2,viewport.clientHeight/2,1/1.5));
+$('zoomResetBtn').addEventListener('click',fitSheet);$('fitBtn').addEventListener('click',fitSheet);
+$('divideBtn').addEventListener('click',()=>$('divideModal').classList.add('show'));
+$('closeDivide').addEventListener('click',()=>$('divideModal').classList.remove('show'));
+$('startDivide').addEventListener('click',()=>{divideParts=Number($('divisionCount').value);divideMode=true;activeTool='select';updateToolUI();$('divideModal').classList.remove('show');toast(`Click a segment to divide it into ${divideParts} parts.`)});
+$('symmetryBtn').addEventListener('click',()=>$('symmetryModal').classList.add('show'));
+$('closeSymmetry').addEventListener('click',()=>$('symmetryModal').classList.remove('show'));
+$('applySymmetry').addEventListener('click',()=>{symmetry={h:$('symH').checked,v:$('symV').checked,d:$('symD').checked};$('symmetryModal').classList.remove('show');toast('Symmetry settings applied to new lines.')});
+$('undoBtn').addEventListener('click',undo);$('redoBtn').addEventListener('click',redo);
+$('newProjectBtn').addEventListener('click',()=>{if(segments.length&&!confirm('Start a new project? Export your current work first if you need it.'))return;saveHistory();segments=[];annotations=[];projectName='Untitled crease pattern';$('.workspace-title h2').textContent=projectName;fitSheet();updateStats();toast('New project created.')});
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),1200)}
+function projectObject(){return {format:'CreaseStudioProject',version:3,projectName,N,paperSize,segments,annotations,layers,symmetry,createdAt:new Date().toISOString()}}
+function saveProject(){downloadBlob(new Blob([JSON.stringify(projectObject(),null,2)],{type:'application/json'}),'crease-studio-project.json');toast('Project file prepared.')}
+$('saveBtn').addEventListener('click',saveProject);$('projectExport').addEventListener('click',()=>{saveProject();$('exportModal').classList.remove('show')});
+$('exportBtn').addEventListener('click',()=>$('exportModal').classList.add('show'));$('closeExport').addEventListener('click',()=>$('exportModal').classList.remove('show'));
+function buildSVG(){
+ const size=1200,scale=size/N;let body=`<rect width="${size}" height="${size}" fill="#ffffff"/>`;
+ for(const s of segments){if(s.type==='construction'&&!layers.construction)continue;if(s.type==='annotation'&&!layers.annotation)continue;if(s.type!=='construction'&&s.type!=='annotation'&&!layers.crease)continue;
+ const col=colors[s.type]||'#222';body+=`<line x1="${s.a.x*scale}" y1="${s.a.y*scale}" x2="${s.b.x*scale}" y2="${s.b.y*scale}" stroke="${col}" stroke-width="2" stroke-linecap="round"/>`;}
+ if(annotations.length&&layers.annotation)for(const a of annotations)body+=`<text x="${a.p.x*scale+6}" y="${a.p.y*scale-6}" font-size="16" fill="${colors.annotation}">${escapeXML(a.text)}</text>`;
+ return `<svg xmlns="${NS}" width="${paperSize}cm" height="${paperSize}cm" viewBox="0 0 ${size} ${size}">${body}</svg>`;
+}
+function escapeXML(s){return s.replace(/[<>&'"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;',"'":'&apos;','"':'&quot;'}[c]))}
+$('svgExport').addEventListener('click',()=>{downloadBlob(new Blob([buildSVG()],{type:'image/svg+xml'}),'crease-pattern.svg');$('exportModal').classList.remove('show')});
+$('pngExport').addEventListener('click',()=>{const img=new Image(),url=URL.createObjectURL(new Blob([buildSVG()],{type:'image/svg+xml'}));img.onload=()=>{const c=document.createElement('canvas');c.width=c.height=1800;c.getContext('2d').drawImage(img,0,0,1800,1800);c.toBlob(b=>downloadBlob(b,'crease-pattern.png'));URL.revokeObjectURL(url)};img.src=url;$('exportModal').classList.remove('show')});
+$('pdfExport').addEventListener('click',()=>{const w=window.open('','_blank');if(!w){toast('Allow pop-ups to print to PDF.');return}w.document.write(`<html><head><title>Crease pattern</title><style>@page{size:square;margin:10mm}body{margin:0}svg{width:100%;height:auto}</style></head><body>${buildSVG()}<script>window.onload=()=>window.print()<\/script></body></html>`);w.document.close();$('exportModal').classList.remove('show')});
+$('referenceInput').addEventListener('change',e=>{const file=e.target.files?.[0];if(!file)return;const reader=new FileReader();reader.onload=()=>{const img=new Image();img.onload=()=>{referenceImage=img;referenceData=reader.result;render();toast('Reference image imported.')};img.src=reader.result};reader.readAsDataURL(file)});
+$('removeReferenceBtn').addEventListener('click',()=>{referenceImage=null;referenceData=null;$('referenceInput').value='';render();toast('Reference image removed.')});
+function analyze(){
+ const verts=new Map();for(const s of segments){for(const p of [s.a,s.b]){const k=pointKey(p);if(!verts.has(k))verts.set(k,{p,types:[],degree:0});const v=verts.get(k);v.degree++;v.types.push(s.type)}}
+ const isolated=[...verts.values()].filter(v=>v.degree===1).length;
+ const odd=[...verts.values()].filter(v=>v.degree>=3&&v.degree%2===1).length;
+ const mountainValley=[...verts.values()].filter(v=>v.degree>=4&&v.types.filter(t=>t==='mountain').length===v.types.filter(t=>t==='valley').length).length;
+ const results=[];
+ results.push({type:segments.length?'ok':'warn',title:segments.length?'Segments detected':'Empty pattern',desc:segments.length?`${segments.length} segments are available for analysis.`:'Add some creases before running checks.'});
+ results.push({type:isolated?'warn':'ok',title:isolated?`${isolated} open endpoint(s)`:'No open endpoints',desc:isolated?'Endpoints may be intentional, but check whether any creases stop unexpectedly.':'No degree-1 vertices found in the current segment graph.'});
+ results.push({type:odd?'warn':'ok',title:odd?`${odd} odd-degree vertex/vertices`:'Vertex connectivity checked',desc:odd?'Odd-degree vertices are not automatically errors; inspect their local crease structure.':'No odd-degree vertices of degree 3 or higher were detected.'});
+ results.push({type:'warn',title:'Foldability not certified',desc:'These are basic graph checks only. Kawasaki and Maekawa require correct local angle and crease assumptions; global foldability is not proven.'});
+ $('checks').innerHTML=results.map(r=>`<div class="check-item"><div class="check-icon ${r.type==='warn'?'warn':r.type==='error'?'error':''}">${r.type==='ok'?'✓':'!'}</div><div><b>${r.title}</b><small>${r.desc}</small></div></div>`).join('');
+}
+$('analyzeBtn').addEventListener('click',analyze);
+$('viewport').addEventListener('dblclick',e=>{const p=getScreenPos(e);zoomAt(p.x,p.y,1.5)});
+document.addEventListener('keydown',e=>{
+ if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName))return;
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}
+ else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo()}
+ else if(e.key==='Escape'){zoomTargetMode=false;divideMode=false;pointerDown=null;$('zoomBanner').classList.remove('show');$('zoomSelectBtn').classList.remove('active');updateToolUI();render()}
+ else if(e.key==='+'||e.key==='=')zoomAt(viewport.clientWidth/2,viewport.clientHeight/2,1.25);
+ else if(e.key==='-')zoomAt(viewport.clientWidth/2,viewport.clientHeight/2,.8);
+});
+new ResizeObserver(resize).observe(viewport);
+updateToolUI();updateUndoButtons();resize();updateStats();
+})();
+</script>
+</body>
+</html>
